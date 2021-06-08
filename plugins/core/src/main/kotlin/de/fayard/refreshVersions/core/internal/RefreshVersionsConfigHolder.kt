@@ -34,10 +34,13 @@ object RefreshVersionsConfigHolder {
             versionsPropertiesFile = versionsPropertiesFile
         )
         configCounter.incrementAndGet()
+        System.err.println("saving '$key'")
         configs[key] = config
         settings.gradle.buildFinished {
+            System.err.println("initialize buildFinished '$key'")
             val current = configCounter.decrementAndGet()
             if(current == 0) {
+                System.err.println("resetting ConfigHolder")
                 resettableDelegates.reset()
             }
         }
@@ -47,14 +50,20 @@ object RefreshVersionsConfigHolder {
     internal fun initializeBuildSrc(settings: Settings): RefreshVersionsConfig {
         require(settings.isBuildSrc)
         val key: String = settings.rootDir.parentFile.path
-        val config = configs[key]!!
+        System.err.println("loading config for '$key'")
+        val config = configs[key] ?: error("failed to load config for '$key', available: ${configs.keys}")
+        System.err.println("loaded config for '$key'")
 
         config.initializeBuildSrc(settings)
 
         configCounter.incrementAndGet()
+
+        System.err.println("buildSrcInitialize for '$key'")
         settings.gradle.buildFinished {
+            System.err.println("'$key' buildSrcInitialize buildFinished")
             val current = configCounter.decrementAndGet()
             if(current == 0) {
+                System.err.println("resetting ConfigHolder")
                 resettableDelegates.reset()
             }
         }
@@ -65,7 +74,10 @@ object RefreshVersionsConfigHolder {
     @InternalRefreshVersionsApi
     fun getConfigForProject(project: Project): RefreshVersionsConfig {
         val key = project.rootDir.path
-        return configs[key] ?: error("failed to load config for $key, available: ${configs.keys}")
+        System.err.println("loading config for $key")
+        val config = configs[key] ?: error("failed to load config for $key, available: ${configs.keys}")
+        System.err.println("loaded config for $key")
+        return config
     }
 }
 

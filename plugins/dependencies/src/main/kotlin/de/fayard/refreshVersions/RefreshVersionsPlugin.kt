@@ -57,7 +57,16 @@ open class RefreshVersionsPlugin : Plugin<Any> {
             settings.extensions.create<RefreshVersionsExtension>("refreshVersions")
         }
 
+        System.err.println("initScripts: "+ settings.startParameter.initScripts)
+        if(settings.startParameter.initScripts.any {
+                it.name == "ijinit.gradle" ||
+                    it.name == "ijmapper.gradle"
+        }) {
+            System.err.println("is idea scan")
+        }
+
         if (settings.isBuildSrc) {
+            System.err.println("bootstrap settings is buildSrc")
             settings.bootstrapRefreshVersionsCoreForBuildSrc()
             addDependencyToBuildSrcForGroovyDsl(settings)
             return
